@@ -30,6 +30,18 @@ Run the docker file
 docker run -p 4567:4567 -v $PWD:/capstone -v /tmp/log:/root/.ros/ --rm -it capstone
 ```
 
+To start docker with named container:
+
+```bash
+docker run --name capstone -p 4567:4567 -v $PWD:/capstone -v /tmp/log:/root/.ros/ --rm -it capstone
+```
+
+Named containers can be connected to with:
+```bash
+docker exec -it capstone bash
+```
+
+
 ### Port Forwarding
 To set up port forwarding, please refer to the "uWebSocketIO Starter Guide" found in the classroom (see Extended Kalman Filter Project lesson).
 
@@ -86,3 +98,11 @@ Specific to these libraries, the simulator grader and Carla use the following:
 | OpenMP | N/A | N/A |
 
 We are working on a fix to line up the OpenCV versions between the two.
+
+
+### To debug messsages from a ROS topic:
+```bash
+source devel/setup.sh
+# Example for the position messages debugging
+rostopic echo /current_pose
+```

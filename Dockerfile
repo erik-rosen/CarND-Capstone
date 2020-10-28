@@ -18,12 +18,18 @@ RUN apt-get upgrade -y
 # install python packages
 RUN apt-get install -y python-pip
 COPY requirements.txt ./requirements.txt
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN python get-pip.py
 RUN pip install -r requirements.txt
 
 # install required ros dependencies
 RUN apt-get install -y ros-$ROS_DISTRO-cv-bridge
 RUN apt-get install -y ros-$ROS_DISTRO-pcl-ros
 RUN apt-get install -y ros-$ROS_DISTRO-image-proc
+
+# install vim
+RUN ["apt-get", "update"]
+RUN ["apt-get", "install", "-y", "vim"]
 
 # socket io
 RUN apt-get install -y netbase

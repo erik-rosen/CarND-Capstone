@@ -3,6 +3,9 @@
 import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
+from scipy.spatial import KDTree
+
+import numpy as np
 
 import math
 
@@ -33,20 +36,79 @@ class WaypointUpdater(object):
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
 
-
+        
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
 
         # TODO: Add other member variables you need below
-
-        rospy.spin()
+        
+        self.pose = None
+        self.waypoints = None
+        self.waypoints_2d = None
+        self.waypoint_tree = None
+        
+        self.loop()
+        
+    def loop(self):
+        rate = rospy.Rate(50)
+        while not rospy.is_shutdown():
+            if self.pose and self.waypoint_tree:
+                closest_waypoint_indx = self.get_closest_waypoint_indx()
+                self.publish_final(closest_waypoint_indx)
+            
+            rate.sleep()
+            
+    def get_closest_waypoint_indx(self):
+        
+        x = self.pose.pose.position.x
+        y = self.pose.pose.position.y
+        closest_indx = self.waypoint_tree.query([x, y], 1)[1]
+        
+        # Check if closest ahead of the veichle 
+        
+        closest_coord = self.waypoints_2d[closest_indx]
+        prev_coord = self.waypoints_2d[closest_indx - 1]
+        
+        # Equation for the hyperplane through closest records
+        
+        closest_vect = np.array(closest_coord)
+        prev_vect = np.array(prev_coord)
+        
+        pos_vect = np.array([x, y])
+        
+        val = np.dot(closest_vect - prev_vect, pos_vect - closest_vect)
+        
+        if val > 0:
+            closest_indx = (closest_indx + 1) % len(self.waypoints_2d)
+        return closest_indx
+        
 
     def pose_cb(self, msg):
-        # TODO: Implement
+        rospy.logdebug("Current position message recieved in waypoint_updater")
+        self.pose = msg
         pass
 
     def waypoints_cb(self, waypoints):
-        # TODO: Implement
+        
+        rospy.logwarn("Recieved waypoints in waypoints_updater")
+        
+        self.waypoints = waypoints
+        
+        if not self.waypoints_2d:
+            self.waypoints_2d = [[waypoint.pose.pose.position.x, waypoint.pose.pose.position.y] for waypoint in waypoints.waypoints]
+            self.waypoint_tree = KDTree(self.waypoints_2d)
         pass
+        
+    def publish_final(self, closest_index):
+        
+        final_waypoints = self.waypoints.waypoints[closest_index:closest_index + LOOKAHEAD_WPS]
+        
+        lane = Lane()
+        lane.header = self.waypoints.header
+        lane.waypoints = final_waypoints
+        
+        rospy.logebug("Publishing final waypoints: {n}".format(n = len(final_waypoints)))
+        
+        self.final_waypoints_pub.publish(lane)
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
