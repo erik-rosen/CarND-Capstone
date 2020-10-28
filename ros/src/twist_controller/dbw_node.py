@@ -57,7 +57,10 @@ class DBWNode(object):
         # self.controller = Controller(<Arguments you wish to provide>)
 
         # TODO: Subscribe to all the topics you need to
+        rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_state)
 
+        self.dbw_enabled = False
+    
         self.loop()
 
     def loop(self):
@@ -73,6 +76,9 @@ class DBWNode(object):
             # if <dbw is enabled>:
             #   self.publish(throttle, brake, steer)
             rate.sleep()
+
+    def dbw_state(self, msg):
+        self.dbw_enabled = msg.data
 
     def publish(self, throttle, brake, steer):
         tcmd = ThrottleCmd()

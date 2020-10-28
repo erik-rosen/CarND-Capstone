@@ -106,7 +106,7 @@ class WaypointUpdater(object):
         lane.header = self.waypoints.header
         lane.waypoints = final_waypoints
         
-        rospy.logebug("Publishing final waypoints: {n}".format(n = len(final_waypoints)))
+        rospy.logdebug("Publishing final waypoints: {n}".format(n = len(final_waypoints)))
         
         self.final_waypoints_pub.publish(lane)
 
