@@ -78,6 +78,9 @@ class TLDetector(object):
         of times till we start using it. Otherwise the previous stable state is
         used.
         '''
+
+        img_crop = self.light_classifier.detect_traffic_light(self.camera_image)
+
         if self.state != state:
             self.state_count = 0
             self.state = state
@@ -89,7 +92,8 @@ class TLDetector(object):
         else:
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
         self.state_count += 1
-
+        
+    
     def get_closest_waypoint(self, pose):
         """Identifies the closest path waypoint to the given position
             https://en.wikipedia.org/wiki/Closest_pair_of_points_problem

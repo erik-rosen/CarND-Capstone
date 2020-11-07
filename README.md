@@ -106,3 +106,9 @@ source devel/setup.sh
 # Example for the position messages debugging
 rostopic echo /current_pose
 ```
+
+## Traffic Light Classifier
+
+### Setup 
+
+We are using conda 
