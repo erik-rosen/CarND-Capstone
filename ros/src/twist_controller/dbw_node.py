@@ -46,39 +46,78 @@ class DBWNode(object):
         max_lat_accel = rospy.get_param('~max_lat_accel', 3.)
         max_steer_angle = rospy.get_param('~max_steer_angle', 8.)
 
-        self.steer_pub = rospy.Publisher('/vehicle/steering_cmd',
-                                         SteeringCmd, queue_size=1)
-        self.throttle_pub = rospy.Publisher('/vehicle/throttle_cmd',
-                                            ThrottleCmd, queue_size=1)
-        self.brake_pub = rospy.Publisher('/vehicle/brake_cmd',
-                                         BrakeCmd, queue_size=1)
+        self.steer_pub = rospy.Publisher(
+            '/vehicle/steering_cmd',
+            SteeringCmd, 
+            queue_size=1
+        )
+        
+        self.throttle_pub = rospy.Publisher(
+            '/vehicle/throttle_cmd',
+            ThrottleCmd, 
+            queue_size=1
+        )
+        
+        self.brake_pub = rospy.Publisher(
+            '/vehicle/brake_cmd',
+            BrakeCmd, 
+            queue_size=1
+        )
 
-        # TODO: Create `Controller` object
-        # self.controller = Controller(<Arguments you wish to provide>)
-
-        # TODO: Subscribe to all the topics you need to
+        # TODO: <Arguments you wish to provide>
+        self.controller = Controller(
+            accel_limit = accel_limit,
+            decel_limit = decel_limit
+        )
+      
+        # Subscribe to all the topics used in dbw
         rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_state)
+        rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_cb)
+        rospy.Subscriber('/current_velocity', TwistStamped, self.velocity_cb)
 
-        self.dbw_enabled = False
-    
+        self.dbw_enabled = None
+        self.twist = None
+        
+        self.velocity = None
+        self.linear_velocity_target = None
+        self.angular_velocity_target = None
+        
         self.loop()
 
     def loop(self):
         rate = rospy.Rate(50) # 50Hz
         while not rospy.is_shutdown():
-            # TODO: Get predicted throttle, brake, and steering using `twist_controller`
-            # You should only publish the control commands if dbw is enabled
-            # throttle, brake, steering = self.controller.control(<proposed linear velocity>,
-            #                                                     <proposed angular velocity>,
-            #                                                     <current linear velocity>,
-            #                                                     <dbw status>,
-            #                                                     <any other argument you need>)
-            # if <dbw is enabled>:
-            #   self.publish(throttle, brake, steer)
+            
+            if not self.dbw_enabled:
+                continue
+            
+            if self.control_params_ready():
+                # TODO: Get predicted throttle, brake, and steering using `twist_controller`
+                # You should only publish the control commands if dbw is enabled
+                throttle, brake, steering = self.controller.control(
+                    linear_velocity_target = self.linear_velocity_target,
+                    angular_velocity_target = self.angular_velocity_target,
+                    velocity_actual = self.velocity
+                )
+                self.publish(throttle, brake, steering)
             rate.sleep()
+            
+    def control_params_ready(self):
+        return \
+            not self.velocity is None and \
+            not self.dbw_enabled is None and \
+            not self.linear_velocity_target is None and \
+            not self.angular_velocity_target is None
 
     def dbw_state(self, msg):
         self.dbw_enabled = msg.data
+        
+    def twist_cb(self, msg):
+        self.linear_velocity_target = msg.twist.linear.x
+        self.angular_velocity_target = msg.twist.angular.z
+        
+    def velocity_cb(self, msg):
+        self.velocity = msg
 
     def publish(self, throttle, brake, steer):
         tcmd = ThrottleCmd()
