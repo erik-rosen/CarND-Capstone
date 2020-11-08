@@ -103,5 +103,8 @@ class TLClassifier(object):
 
     def detect_traffic_light(self, image):
         boxes = self.detect_multi_object(image, score_threshold=0.2)
+        if len(boxes) == 0:
+            return None
+
         cropped_image = crop_roi_image(image, boxes[0])
         return cropped_image
