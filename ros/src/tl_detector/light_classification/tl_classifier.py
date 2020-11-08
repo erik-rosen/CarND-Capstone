@@ -72,7 +72,7 @@ class TLClassifier(object):
 
         # To read more about the model zoo see:
         # https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1_detection_zoo.md
-        PATH_TO_CKPT = "/capstone/ros/src/tl_detector/light_classification/models/ssd_mobilenet_v1_coco_11_06_2017/frozen_inference_graph.pb"
+        PATH_TO_CKPT = "./light_classification/models/ssd_mobilenet_v1_coco_11_06_2017/frozen_inference_graph.pb"
 
         cwd = os.getcwd()
         print(cwd)
