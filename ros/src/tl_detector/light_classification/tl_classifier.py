@@ -31,7 +31,7 @@ class TLClassifier(object):
     def __init__(self):
         self.load_graph()
         self.extract_graph_components()
-        self.sess = tf.compat.v1.Session(graph=self.detection_graph)
+        self.sess = tf.Session(graph=self.detection_graph)
 
         pass
 
@@ -81,7 +81,7 @@ class TLClassifier(object):
         with detection_graph.as_default():
             # Line below is different from tensorflow 2 version used in Jupyter
             # https://stackoverflow.com/questions/57614436/od-graph-def-tf-graphdef-attributeerror-module-tensorflow-has-no-attribut
-            od_graph_def = tf.compat.v1.GraphDef()
+            od_graph_def = tf.GraphDef()
             with tf.io.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
                 serialized_graph = fid.read()
                 od_graph_def.ParseFromString(serialized_graph)
