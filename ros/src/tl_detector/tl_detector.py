@@ -75,8 +75,8 @@ class TLDetector(object):
             msg (Image): image from car-mounted camera
 
         """
-        #self.has_image = True
-        #self.camera_image = msg
+        self.has_image = True
+        self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
 
         '''
@@ -86,7 +86,7 @@ class TLDetector(object):
         used.
         '''
 
-        img_crop = self.light_classifier.detect_traffic_light(self.camera_image)
+        img_crop = self.light_classifier.detect_traffic_light(self.camera_image.data)
 
         if self.state != state:
             self.state_count = 0
