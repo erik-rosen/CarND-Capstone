@@ -98,7 +98,7 @@ class TLDetector(object):
 
         img_crop = self.light_classifier.detect_traffic_light(self.cv_image)
 
-        if img_crop:
+        if len(img_crop) == 0:
             state_cv = TrafficLight.UNKNOWN
 
 
