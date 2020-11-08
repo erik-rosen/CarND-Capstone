@@ -1,7 +1,7 @@
 from styx_msgs.msg import TrafficLight
 import tensorflow as tf
 import os
-
+import numpy as np
 
 def select_boxes(boxes, classes, scores, score_threshold=0, target_class=10):
     """
